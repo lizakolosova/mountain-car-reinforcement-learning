@@ -1,0 +1,5 @@
+environment: "CartPole-v1"
+algorithm: "DQN"
+timesteps: 200000
+checkpoint_freq: 10000
+num_trials: 3
