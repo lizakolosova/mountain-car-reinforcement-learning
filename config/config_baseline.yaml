@@ -1,5 +1,5 @@
-environment: "CartPole-v1"
-algorithm: "DQN"
+environment: "MountainCarContinuous-v0"
+algorithm: "SAC"
 timesteps: 200000
 checkpoint_freq: 10000
 num_trials: 3
