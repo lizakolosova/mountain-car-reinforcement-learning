@@ -1,11 +1,38 @@
 import gymnasium as gym
-from stable_baselines3 import PPO, DQN, A2C, SAC
+from stable_baselines3 import SAC
+import numpy as np
 
 
 def evaluate(model_path, env_id, episodes=10):
-    model =  # Load your model
+    model = SAC.load(model_path)
     env = gym.make(env_id)
+    returns = []
+
     for _ in range(episodes):
-        # Reset environment, initialize episode
-        while not finished:
-            # Predict actions with model (without exploration!!), apply them to environment, log metrics
+        obs, _ = env.reset()
+        done = False
+        ep_ret = 0.0
+
+        while not done:
+            action, _ = model.predict(obs, deterministic=True)
+            obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            ep_ret += reward
+
+        returns.append(ep_ret)
+
+    env.close()
+    returns = np.array(returns)
+    mean_ret = returns.mean()
+    std_ret = returns.std()
+    print(f"Evaluated {episodes} episodes: mean return = {mean_ret:.2f}, std = {std_ret:.2f}")
+    return mean_ret, std_ret, returns
+
+
+if __name__ == "__main__":
+    evaluate(
+        # replace the path with the model path
+        model_path="logs/baseline/SAC_trial0/checkpoints/model.zip",
+        env_id="MountainCarContinuous-v0",
+        episodes=10,
+    )

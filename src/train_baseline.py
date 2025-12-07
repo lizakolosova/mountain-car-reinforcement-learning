@@ -1,4 +1,4 @@
-from stable_baselines3 import PPO, DQN, A2C, SAC
+from stable_baselines3 import SAC
 import gymnasium as gym
 from utils import load_config
 from stable_baselines3.common.callbacks import CheckpointCallback
@@ -8,8 +8,8 @@ import os
 def train_baseline(cfg_path="config/config_baseline.yaml"):
     cfg = load_config(cfg_path)
     for trial in range(cfg['num_trials']):
-        env =  gym.make(cfg['environment'])# Create environment
-        algo =  SAC # Pick Algorithm
+        env =  gym.make(cfg['environment'])
+        algo =  SAC
 
         model = algo("MlpPolicy", env, verbose=1,
                      tensorboard_log=f"logs/baseline/{cfg['algorithm']}_trial{trial}/")
