@@ -153,5 +153,65 @@ def comparison():
     print("-" * 80 + "\n")
 
 
+def extension_comparison(base_dir="./src/logs/extension"):
+    if os.path.basename(os.getcwd()) == "src":
+        os.chdir("..")
+
+    if not os.path.exists(base_dir):
+        print("No extension logs found.")
+        return
+
+    print("\n" + "=" * 80)
+    print("CUSTOM REWARD + HYPERPARAMETER TUNING (EXTENSION)")
+    print("=" * 80 + "\n")
+
+    import glob
+    import numpy as np
+
+    # loop over learning_rate_0.0001, learning_rate_0.0003, ...
+    for hp_setting in sorted(os.listdir(base_dir)):
+        hp_path = os.path.join(base_dir, hp_setting)
+        if not os.path.isdir(hp_path):
+            continue
+
+        trial_results = []
+        print(f"Hyperparameter setting: {hp_setting}")
+        print("-" * 80)
+
+        for trial_dir in sorted(os.listdir(hp_path)):
+            checkpoint_dir = os.path.join(hp_path, trial_dir, "checkpoints")
+            if not os.path.exists(checkpoint_dir):
+                continue
+
+            checkpoints = glob.glob(os.path.join(checkpoint_dir, "rl_model_*_steps.zip"))
+            if not checkpoints:
+                continue
+
+            checkpoints.sort(key=lambda x: int(x.split("_")[-2]))
+            latest = checkpoints[-1]
+
+            res = evaluate_model(latest, episodes=20)
+            trial_results.append(res)
+            print(
+                f" {trial_dir}: max_pos={res['mean_max_pos']:.3f}, "
+                f"dist={res['mean_distance']:.3f}, success={res['success_rate']:.0f}%"
+            )
+
+        if not trial_results:
+            print(" No valid trials.\n")
+            continue
+
+        mean_pos = np.mean([r["mean_max_pos"] for r in trial_results])
+        mean_dist = np.mean([r["mean_distance"] for r in trial_results])
+        mean_succ = np.mean([r["success_rate"] for r in trial_results])
+
+        print(
+            f" => mean max_pos={mean_pos:.3f}, "
+            f"mean_dist={mean_dist:.3f}, "
+            f"mean_success={mean_succ:.1f}%\n"
+        )
+
+
 if __name__ == "__main__":
-    comparison()
+    comparison()           # baseline vs custom
+    extension_comparison() # custom vs tuned learning rates
