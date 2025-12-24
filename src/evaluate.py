@@ -32,7 +32,31 @@ def evaluate(model_path, env_id, episodes=10):
 if __name__ == "__main__":
     evaluate(
         # replace the path with the model path
-        model_path="logs/baseline/SAC_trial0/checkpoints/model.zip",
+        model_path="../src/logs/baseline/SAC_trial0/checkpoints/model.zip",
         env_id="MountainCarContinuous-v0",
         episodes=10,
+    )
+
+if __name__ == "__main__":
+    env_id = "MountainCarContinuous-v0"
+
+    print("\n=== learning_rate = 0.0001 ===")
+    evaluate(
+        model_path="results/extension/learning_rate_0.0001/SAC/trial0.zip",
+        env_id=env_id,
+        episodes=20,
+    )
+
+    print("\n=== learning_rate = 0.0003 ===")
+    evaluate(
+        model_path="results/extension/learning_rate_0.0003/SAC/trial0.zip",
+        env_id=env_id,
+        episodes=20,
+    )
+
+    print("\n=== learning_rate = 0.001 ===")
+    evaluate(
+        model_path="results/extension/learning_rate_0.001/SAC/trial0.zip",
+        env_id=env_id,
+        episodes=20,
     )
