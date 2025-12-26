@@ -32,7 +32,7 @@ def evaluate_model(model_path, episodes=20):
             max_pos = max(max_pos, position)
 
         success = max_pos >= 0.45
-        dist = abs(0.45 - max_pos)
+        dist = 0.45 - max_pos
 
         returns.append(ep_return)
         lengths.append(ep_length)
@@ -57,101 +57,65 @@ def comparison():
     if os.path.basename(os.getcwd()) == 'src':
         os.chdir('..')
 
-    print("\n" + "=" * 80)
-    print("BASELINE vs CUSTOM COMPARISON")
-    print("=" * 80 + "\n")
+    print("\n" + "=" * 90)
+    print(f"{'STATISTICAL PERFORMANCE COMPARISON':^90}")
+    print("=" * 90 + "\n")
 
     results = {'baseline': [], 'custom': []}
 
     for exp_type in ['baseline', 'custom']:
-        print(f"{exp_type.upper()} Results:")
-        print("-" * 80)
-
+        print(f"{exp_type.upper()} Trials:")
+        print("-" * 90)
         for trial in range(3):
             checkpoint_dir = f"logs/{exp_type}/SAC_trial{trial}/checkpoints/"
-
-            if not os.path.exists(checkpoint_dir):
-                continue
+            if not os.path.exists(checkpoint_dir): continue
 
             checkpoints = glob.glob(os.path.join(checkpoint_dir, "rl_model_*_steps.zip"))
-            if not checkpoints:
-                continue
+            if not checkpoints: continue
 
             checkpoints.sort(key=lambda x: int(x.split('_')[-2]))
-            latest = checkpoints[-1]
+            latest = checkpoints[-1].replace(".zip", "")
 
             trial_results = evaluate_model(latest, episodes=20)
-            trial_results['trial'] = trial
             results[exp_type].append(trial_results)
 
-            print(f"  Trial {trial}: max_pos={trial_results['mean_max_pos']:.3f}, "
-                  f"distance_to_goal={trial_results['mean_distance']:.3f}, "
-                  f"success={trial_results['success_rate']:.0f}%")
-
+            display_dist = max(0, trial_results['mean_distance'])
+            print(f"  Trial {trial}: Max Pos: {trial_results['mean_max_pos']:>6.3f} | "
+                  f"Dist to Goal: {display_dist:>6.3f} | "
+                  f"Success: {trial_results['success_rate']:>3.0f}%")
         print()
 
     if not results['baseline'] or not results['custom']:
         print("Missing data")
         return
 
-    baseline_pos = np.mean([r['mean_max_pos'] for r in results['baseline']])
-    baseline_dist = np.mean([r['mean_distance'] for r in results['baseline']])
-    baseline_success = np.mean([r['success_rate'] for r in results['baseline']])
+    def get_stats(key, cat):
+        vals = [r[key] for r in results[cat]]
+        return np.mean(vals), np.std(vals)
 
-    custom_pos = np.mean([r['mean_max_pos'] for r in results['custom']])
-    custom_dist = np.mean([r['mean_distance'] for r in results['custom']])
-    custom_success = np.mean([r['success_rate'] for r in results['custom']])
+    b_pos, b_pos_std = get_stats('mean_max_pos', 'baseline')
+    c_pos, c_pos_std = get_stats('mean_max_pos', 'custom')
 
-    print("=" * 80)
-    print("COMPREHENSIVE COMPARISON (Task Performance)")
-    print("=" * 80 + "\n")
+    b_dist = max(0, 0.45 - b_pos)
+    c_dist = max(0, 0.45 - c_pos)
+
+    b_succ, _ = get_stats('success_rate', 'baseline')
+    c_succ, _ = get_stats('success_rate', 'custom')
+
+    print("=" * 90)
+    print(f"{'AGGREGATED METRICS':^90}")
+    print("=" * 90 + "\n")
 
     print(f"{'Metric':<30} {'Baseline':<20} {'Custom':<20} {'Improvement':<15}")
-    print("-" * 85)
+    print("-" * 90)
 
-    print(f"{'Max Position Reached':<30} {baseline_pos:<20.3f} {custom_pos:<20.3f} ", end="")
-    pos_improvement = custom_pos - baseline_pos
-    print(f"{pos_improvement:+.3f}")
-
-    print(f"{'Distance to Goal (0.45)':<30} {baseline_dist:<20.3f} {custom_dist:<20.3f} ", end="")
-    dist_improvement = baseline_dist - custom_dist
-    print(f"{dist_improvement:+.3f} ✓")
-
-    pct_closed = (dist_improvement / baseline_dist) * 100
-    print(f"{'% of Distance Closed':<30} {'':<20} {'':<20} {pct_closed:.1f}%")
-
-    print(f"{'Success Rate':<30} {baseline_success:<20.1f}% {custom_success:<20.1f}% ", end="")
-    if custom_success > baseline_success:
-        print(f"+{custom_success - baseline_success:.1f}%")
-    else:
-        print("0%")
-
-    print()
-
-    print("=" * 80)
-    print("KEY INSIGHTS FOR THE REPORT")
-    print("=" * 80 + "\n")
-
-    print(f"  • Baseline stuck at position {baseline_pos:.3f} (left valley)")
-    print(f"  • {baseline_dist:.3f} units away from goal")
-
-    print(f"  • Custom reward reaches position {custom_pos:.3f}")
-    print(f"  • Only {custom_dist:.3f} units from goal")
-    print(f"  • Closes {pct_closed:.1f}% of the distance to goal")
     print(
-        f"  • Improvement: {pos_improvement:+.3f} position units ({abs(pos_improvement / baseline_pos) * 100:.0f}% better)\n")
+        f"{'Max Position (Mean ± SD)':<30} {f'{b_pos:.3f} ± {b_pos_std:.3f}':<20} {f'{c_pos:.3f} ± {c_pos_std:.3f}':<20} {c_pos - b_pos:+.3f}")
+    print(f"{'Distance to Goal':<30} {b_dist:<20.3f} {c_dist:<20.3f} {b_dist - c_dist:+.3f} ✓")
 
-
-    print("-" * 80)
-    print(
-        f"Baseline max position:     {baseline_pos:.3f} ± {np.std([r['mean_max_pos'] for r in results['baseline']]):.3f}")
-    print(f"Custom max position:       {custom_pos:.3f} ± {np.std([r['mean_max_pos'] for r in results['custom']]):.3f}")
-    print(f"Absolute improvement:      {pos_improvement:+.3f}")
-    print(f"Relative improvement:      {abs(pos_improvement / baseline_pos) * 100:+.0f}%")
-    print(f"Distance closed:           {pct_closed:.1f}%")
-    print(f"Number of trials:          {len(results['baseline'])} (baseline), {len(results['custom'])} (custom)")
-    print("-" * 80 + "\n")
-
+    pct_closed = ((b_dist - c_dist) / b_dist) * 100 if b_dist != 0 else 100
+    print(f"{'Distance Gap Closed':<30} {'-':<20} {'-':<20} {min(100, pct_closed):.1f}%")
+    print(f"{'Success Rate':<30} {b_succ:<20.1f}% {c_succ:<20.1f}% {c_succ - b_succ:+.1f}%")
 
 def extension_comparison(base_dir="./logs/extension"):
     if os.path.basename(os.getcwd()) == "src":
