@@ -117,18 +117,6 @@ def comparison():
     print(f"{'Distance Gap Closed':<30} {'-':<20} {'-':<20} {min(100, pct_closed):.1f}%")
     print(f"{'Success Rate':<30} {b_succ:<20.1f}% {c_succ:<20.1f}% {c_succ - b_succ:+.1f}%")
 
-    print("\n" + "=" * 90)
-    print(f"{'KEY RESEARCH INSIGHTS':^90}")
-    print("=" * 90 + "\n")
-
-    print(f"  • PROBLEM: Baseline agent suffered from 'Vanishing Gradients'—it never left the valley floor.")
-    print(
-        f"  • EXPLORATION: Custom reward provided a dense signal, allowing the agent to swing {abs(c_pos - b_pos):.3f} units further.")
-    print(f"  • SOLUTION: The custom agent successfully closed 100% of the required distance to goal in all trials.")
-    print(
-        f"  • RELIABILITY: Zero variance in success rate ({c_succ}%) across all seeds demonstrates high algorithmic stability.")
-    print("\n" + "=" * 90)
-
 def extension_comparison(base_dir="./src/logs/extension"):
     if os.path.basename(os.getcwd()) == "src":
         os.chdir("..")
