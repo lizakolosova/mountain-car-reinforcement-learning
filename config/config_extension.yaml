@@ -1,5 +1,5 @@
-env_id: MountainCarContinuous-v0
-algo: SAC
+environment: "MountainCarContinuous-v0"
+algorithm: "SAC"
 total_timesteps: 200000
 n_trials: 3
 checkpoint_freq: 10000

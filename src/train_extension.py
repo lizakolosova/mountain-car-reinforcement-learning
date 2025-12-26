@@ -7,11 +7,11 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 import os
 
 
-def train_extension(cfg_path: str = "../config/config_extension.yaml"):
+def train_extension(cfg_path: str = "./config/config_extension.yaml"):
     cfg = load_config(cfg_path)
 
-    env_id = cfg["env_id"]
-    algo_name = cfg.get("algo", "SAC")
+    env_id = cfg["environment"]
+    algo_name = cfg.get("algorithm", "SAC")
     total_timesteps = cfg["total_timesteps"]
 
     hyperparam_name = cfg["hyperparam_name"]

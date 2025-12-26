@@ -153,7 +153,7 @@ def comparison():
     print("-" * 80 + "\n")
 
 
-def extension_comparison(base_dir="./src/logs/extension"):
+def extension_comparison(base_dir="./logs/extension"):
     if os.path.basename(os.getcwd()) == "src":
         os.chdir("..")
 
