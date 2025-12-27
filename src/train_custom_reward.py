@@ -4,9 +4,9 @@ from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from utils import load_config
-from src.custom_env_wrapper import CustomRewardWrapper
+from custom_env_wrapper import CustomRewardWrapper
 
-def train_custom(cfg_path="../config/config_custom.yaml"):
+def train_custom(cfg_path="config/config_custom.yaml"):
     cfg = load_config(cfg_path)
 
     for trial in range(cfg['num_trials']):
